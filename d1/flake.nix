@@ -19,7 +19,7 @@
       in {
         packages.default = pkgs.writeShellScriptBin "run" ''
           ${pkgs.luajitPackages.fennel}/bin/fennel -c main.fnl > main.lua
-          #LUA_PATH="?.lua;"
+          #LUA_PATH="?.lua;../?.lua;"
           ${pkgs.luajit}/bin/luajit main.lua
         '';
         devShells.default = pkgs.mkShell { buildInputs = my-buildInputs; };
