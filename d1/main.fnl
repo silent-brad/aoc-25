@@ -1,38 +1,33 @@
-(fn solve [filename count-pass?]
-  (var dial 50)
-  (var zeros 0)
+;; Advent of Code 2025 - Day 1: Secret Entrance
 
-  (with-open [f (io.open filename)]
-    (each [line (f:lines)]
-      (when (and line (not (line:find "^%s*$")))
+;; Safe modulo 100 -> always returns 0..99
+(fn mod100 [n]
+  (let [m (% n 100)]
+    (if (< m 0) (+ m 100) m)))
+
+(fn solve [filename]
+  (var pos 50)
+  (var part1 0)
+  (var part2 0)
+  (with-open [file (io.open filename "r")]
+    (each [line (file:lines)]
+      (when (and line (> (length line) 0))
         (let [dir (line:sub 1 1)
               dist (tonumber (line:sub 2))
-              delta (if (= dir :L) (- dist) dist)]
+              step (if (= dir "R") 1 -1)]
+          ;; Simulate every single click
+          (for [_ 1 dist]
+            (set pos (mod100 (+ pos step)))
+            (when (= pos 0)
+              (set part2 (+ part2 1))))
+          ;; Part 1: only count if we land on 0 after full rotation
+          (when (= pos 0)
+            (set part1 (+ part1 1)))))))
+  (values part1 part2))
 
-          ;; Full circles: every 100 clicks passes 0 once
-          (when (and count-pass? (>= (math.abs delta) 100))
-            (set zeros (+ zeros (math.floor (/ (math.abs delta) 100)))))
-
-          ;; Effective move within 0..99
-          (local effective (% delta 100))
-          (local new-dial (% (+ dial effective 10000) 100))
-
-          ;; Count crossing 0 on partial move
-          (when count-pass?
-            (if (> effective 0)
-                (when (>= (+ dial effective) 100)
-                  (set zeros (+ zeros 1)))
-                (< effective 0)
-                (when (< (+ dial effective) 0)
-                  (set zeros (+ zeros 1)))))
-
-          (set dial new-dial)
-
-          ;; Landed on 0?
-          (when (= dial 0)
-            (set zeros (+ zeros 1))))))
-
-  zeros))
-
-(print "Part 1:" (solve :data.txt false))
-(print "Part 2:" (solve :data.txt true))
+;; --- Run it ---
+;; (local filename :test.txt)
+(local filename :data.txt)
+(let [(p1 p2) (solve filename)]
+  (print "Part 1:" p1)
+  (print "Part 2:" p2))
