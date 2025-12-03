@@ -11,7 +11,7 @@
       (for [i (+ j 1) (- (length bank) (- digits a))]
         (let [n (tonumber (bank:sub i i))]
           (if (> n highest)
-              (do (print a i n) (set highest n)
+              (do (set highest n)
                   (set j i)))))
       (set joltage (.. joltage (tostring highest))))
     joltage))
