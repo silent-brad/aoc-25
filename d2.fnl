@@ -49,5 +49,5 @@
           (sum-invalid-ids text))
         (error "Could not open file"))))
 
-;; (print (solve :test.txt))
-(print (solve :data.txt))
+(local filename (. [...] 1))
+(print (solve filename))

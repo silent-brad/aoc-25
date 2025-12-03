@@ -26,8 +26,7 @@
   (values part1 part2))
 
 ;; --- Run it ---
-;; (local filename :test.txt)
-(local filename :data.txt)
+(local filename (. [...] 1))
 (let [(p1 p2) (solve filename)]
   (print "Part 1:" p1)
   ;; string.format needed to not output as scientific notation

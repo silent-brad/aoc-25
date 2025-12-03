@@ -1,4 +1,4 @@
-;; Advent of Code 2025 - Day 1: Secret Entrance
+;; Day 1: Secret Entrance
 
 ;; Safe modulo 100 -> always returns 0..99
 (fn mod100 [n]
@@ -26,8 +26,7 @@
   (values part1 part2))
 
 ;; --- Run it ---
-;; (local filename :test.txt)
-(local filename :data.txt)
+(local filename (. [...] 1))
 (let [(p1 p2) (solve filename)]
   (print "Part 1:" p1)
   (print "Part 2:" p2))
