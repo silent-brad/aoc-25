@@ -1,6 +1,16 @@
 ;; Day 4: Printing Department
 (import-macros {: run-solution} :utils)
 
+;; Copies a 2x2 table matrix
+(macro copy-matrix [m]
+  `(let [copy# []]
+    (each [i# row# (ipairs ,m)]
+      (let [new-row# []]
+        (each [j# val# (ipairs row#)]
+          (table.insert new-row# val#))
+        (table.insert copy# new-row#)))
+    copy#))
+
 ;; Converts text to a 2x2 table matrix
 (macro convert-to-matrix [text]
   `(let [matrix# []]
@@ -35,12 +45,33 @@
 (fn parse-line [text]
   (var part1 0)
   (var part2 0)
-  (let [matrix (convert-to-matrix text)]
+  (var matrix (convert-to-matrix text))
+
+  ;; Part 1
+  (each [a aisle (ipairs matrix)]
+    (each [b tile (ipairs aisle)]
+      (if (= tile "@")
+        (if (is-forklift-accessable? matrix a b)
+            (set part1 (+ part1 1))))))
+
+  ;; Part 2
+  (var new-matrix (copy-matrix matrix))
+  (var rolls-per-pass 0)
+  (var accessable-rolls-left? true)
+  (while accessable-rolls-left?
     (each [a aisle (ipairs matrix)]
       (each [b tile (ipairs aisle)]
         (if (= tile "@")
           (if (is-forklift-accessable? matrix a b)
-              (set part1 (+ part1 1)))))))
+              (do (set rolls-per-pass (+ rolls-per-pass 1))
+                  ;; Remove the roll from the new matrix
+                  (set (. new-matrix a b) "."))))))
+    (set part2 (+ part2 rolls-per-pass))
+    (if (= rolls-per-pass 0)
+        (set accessable-rolls-left? false)
+        (set matrix (copy-matrix new-matrix)))
+    (set rolls-per-pass 0))
+
   (values part1 part2))
 
 (run-solution parse-line)
