@@ -1,4 +1,5 @@
 ;; Day 2: Gift Shop
+(import-macros {: run-solution} :utils)
 
 ;; For part 1
 (fn is-double? [n]
@@ -31,23 +32,17 @@
     found))
 
 (fn sum-invalid-ids [text]
-  (var sum 0)
-  (each [range (string.gmatch text "([^,]+)")]
+  (var sum1 0)
+  (var sum2 0)
+  (each [range (text:gmatch "([^,]+)")]
     (let [ids (string.gmatch range "([^-]+)")
           head (tonumber (ids))
           tail (tonumber (ids))]
       (for [i head tail]
+        (if (is-double? i)
+            (set sum1 (+ sum1 i)))
         (if (is-repeated? i)
-            (set sum (+ sum i))))))
-  sum)
+            (set sum2 (+ sum2 i))))))
+  (values sum1 sum2))
 
-(fn solve [filename]
-  (let [file (io.open filename "r")]
-    (if file
-        (let [text (file:read "*a")]
-          (file:close)
-          (sum-invalid-ids text))
-        (error "Could not open file"))))
-
-(local filename (. [...] 1))
-(print (solve filename))
+(run-solution sum-invalid-ids)

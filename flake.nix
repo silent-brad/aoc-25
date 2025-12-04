@@ -35,8 +35,7 @@
             INPUT="$DAY-$TEST.txt"
           fi
 
-          ${pkgs.luajitPackages.fennel}/bin/fennel -c "$DAY.fnl" > "$DAY.lua"
-          LUA_PATH="?.lua;?/?.lua;" ${pkgs.luajit}/bin/luajit "$DAY.lua" "inputs/$INPUT"
+          ${pkgs.luajitPackages.fennel}/bin/fennel "$DAY.fnl" "inputs/$INPUT"
         '';
         devShells.default = pkgs.mkShell { buildInputs = my-buildInputs; };
       });
