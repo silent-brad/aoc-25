@@ -1,48 +1,72 @@
 ;; Part 5: Cafeteria
 (import-macros {: run-solution} :utils)
 
-(fn get-range [line]
-  (let [range (string.gmatch line "([^-]+)")]
-    [(tonumber (range)) (tonumber (range))]))
+(fn parse-range [line]
+  (let [(a b) (string.match line "(%d+)-(%d+)")]
+    [(tonumber a) (tonumber b)]))
 
-(fn is-in-range? [ranges id]
-  (var found? false)
-  (var range (. ranges 1))
-  (var i 1)
-  (while (and (not found?) (<= i (length ranges)))
-    (if (and (<= id (. range 2)) (> id (. range 1)))
-        (set found? true))
-    (set i (+ i 1))
-    (set range (. ranges i)))
-  found?)
+(fn covered-by-any? [ranges id]
+  (var yes? false)
+  (each [_ [lo hi] (pairs ranges) :until yes?]
+    (when (and (<= lo id) (<= id hi))
+      (set yes? true)))
+  yes?)
+
+(macro copy-table [t]
+  `(let [copy# []]
+    (each [i# val# (ipairs ,t)]
+      (table.insert copy# val#))
+    copy#))
+
+(fn merge-ranges [ranges]
+  (when (= 0 (# ranges)) (lua "return {}"))
+  (var sorted (copy-table ranges))
+  (table.sort sorted (fn [a b]
+                        (if (< (. a 1) (. b 1)) true
+                            (> (. a 1) (. b 1)) false
+                            (< (. a 2) (. b 2)))))
+
+  (var merged [])
+  (var curr-lo (. sorted 1 1))
+  (var curr-hi (. sorted 1 2))
+
+  (for [i 2 (# sorted)]
+    (let [[lo hi] (. sorted i)]
+      (if (<= lo (+ curr-hi 1))
+          (set curr-hi (math.max curr-hi hi))
+          (do
+            (table.insert merged [curr-lo curr-hi])
+            (set curr-lo lo)
+            (set curr-hi hi)))))
+
+  (table.insert merged [curr-lo curr-hi])
+  merged)
+
+(fn count-unique-ids [merged]
+  (accumulate [total 0
+               _ [lo hi] (ipairs merged)]
+    (+ total (- hi lo -1))))
 
 (fn parse-text [text]
-  (var part1 0)
-  (var part2 0)
-  (var ranges [])
-  (var range-i 1)
-  (var first-half? true)
+  (var fresh-ranges [])
+  (var available-ids [])
+  (var reading-ranges? true)
+
   (each [line (text:gmatch "(.-)\n")]
-    (if (= line "")
-        (set first-half? false)
-        first-half?
-        (let [range (get-range line)
-              start (. range 1)
-              finish (. range 2)]
+    (when (not= line "")
+      (if reading-ranges?
+          (if (string.find line "-")
+              (table.insert fresh-ranges (parse-range line))
+              (do (set reading-ranges? false)
+                  (table.insert available-ids (tonumber line))))
+          (table.insert available-ids (tonumber line)))))
 
-          (for [id start finish]
-            (var overlaps? false)
-            (each [_ [prev-start prev-finish] (pairs ranges)]
-              (if (and (<= id prev-finish) (>= id prev-start))
-                  (set overlaps? true)))
-            (if (not overlaps?)
-                (set part2 (+ part2 1))))
-
-          (table.insert ranges range)
-          (set range-i (+ range-i 1)))
-        (if (is-in-range? ranges (tonumber line))
-            (set part1 (+ part1 1)))))
-
-  (values part1 part2))
+  (let [part1 (accumulate [cnt 0
+                           id (ipairs available-ids)]
+                (if (covered-by-any? fresh-ranges (. available-ids id))
+                    (+ cnt 1) cnt))
+        merged (merge-ranges fresh-ranges)
+        part2 (count-unique-ids merged)]
+    (values part1 part2)))
 
 (run-solution parse-text)
