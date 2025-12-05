@@ -20,13 +20,26 @@
   (var part1 0)
   (var part2 0)
   (var ranges [])
-  (var ids [])
+  (var range-i 1)
   (var first-half? true)
   (each [line (text:gmatch "(.-)\n")]
     (if (= line "")
         (set first-half? false)
         first-half?
-        (table.insert ranges (get-range line))
+        (let [range (get-range line)
+              start (. range 1)
+              finish (. range 2)]
+
+          (for [id start finish]
+            (var overlaps? false)
+            (each [_ [prev-start prev-finish] (pairs ranges)]
+              (if (and (<= id prev-finish) (>= id prev-start))
+                  (set overlaps? true)))
+            (if (not overlaps?)
+                (set part2 (+ part2 1))))
+
+          (table.insert ranges range)
+          (set range-i (+ range-i 1)))
         (if (is-in-range? ranges (tonumber line))
             (set part1 (+ part1 1)))))
 
