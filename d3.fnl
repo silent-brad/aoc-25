@@ -16,7 +16,7 @@
     (set joltage (.. joltage (tostring highest))))
   joltage)
 
-(fn parse-line [text]
+(fn parse-text [text]
   (var part1 0)
   (var part2 0)
   (each [line (text:gmatch "[^\n]+")]
@@ -24,4 +24,4 @@
     (set part2 (+ part2 (get-joltage line 12))))
   (values part1 part2))
 
-(run-solution parse-line)
+(run-solution parse-text)

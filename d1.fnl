@@ -6,7 +6,7 @@
   (let [m (% n 100)]
     (if (< m 0) (+ m 100) m)))
 
-(fn parse-line [text]
+(fn parse-text [text]
   (var pos 50)
   (var part1 0)
   (var part2 0)
@@ -25,4 +25,4 @@
           (set part1 (+ part1 1))))))
   (values part1 part2))
 
-(run-solution parse-line)
+(run-solution parse-text)

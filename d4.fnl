@@ -42,7 +42,7 @@
               (set rolls (+ rolls 1))))))))
     (< rolls 4))
 
-(fn parse-line [text]
+(fn parse-text [text]
   (var part1 0)
   (var part2 0)
   (var matrix (convert-to-matrix text))
@@ -74,4 +74,4 @@
 
   (values part1 part2))
 
-(run-solution parse-line)
+(run-solution parse-text)
