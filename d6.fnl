@@ -5,34 +5,45 @@
   (var part1 0)
   (var part2 0)
 
-  (var matrix [])
-  (var operations [])
-  (var (_ line-count) (text:gsub "\n" ""))
-  (var first-line (text:match "[^\n]+"))
-  ;; (var (_ number-count) (first-line:gsub "%S+" ""))
-  (var i 1)
-  (each [line (text:gmatch "[^\n]+")]
-    (var j 1)
-    (each [number (line:gmatch "%S+")]
-      (if (= i line-count)
-          (table.insert operations number)
-          (= i 1)
-          (table.insert matrix [(tonumber number)])
-          (tset matrix j i (tonumber number)))
-      (set j (+ j 1)))
-    (set i (+ i 1)))
- 
-    (each [k numbers (pairs matrix)]
-      (var total 0)
-      ;; Use accumulate
-      (if (= (. operations k) "+")
-        (each [_ number (pairs numbers)]
-          (set total (+ total number)))
-        (do
-          (set total 1)
-          (each [_ number (pairs numbers)]
-            (set total (* total number)))))
-      (set part1 (+ part1 total)))
+  (let [lines (icollect [line (text:gmatch "[^\n]+")]
+                 line)]
+    
+    ;; Split input into columns by finding space-separated blocks
+    (var tokens [])
+    (each [row line (ipairs lines)]
+      (table.insert tokens [])
+      (each [token (string.gmatch line "%S+")]
+        (table.insert (. tokens row) token)))
+    
+    ;; Find number of columns by checking the operations row (last row)
+    (let [ops-row (. tokens (length tokens))
+          num-cols (length ops-row)]
+      
+      ;; Process each column
+      (for [col 1 num-cols]
+        (var numbers [])
+        (var operation nil)
+        
+        ;; Extract numbers and operation from this column
+        (for [row 1 (length tokens)]
+          (let [token-row (. tokens row)
+                token (. token-row col)]
+            (when token
+              (if (or (= token "+") (= token "*"))
+                  (set operation token)
+                  (let [num (tonumber token)]
+                    (when num
+                      (table.insert numbers num)))))))
+        
+        ;; Calculate result for this column
+        (when (and (> (length numbers) 0) operation)
+          (var result (. numbers 1))
+          (for [i 2 (length numbers)]
+            (let [num (. numbers i)]
+              (set result (if (= operation "+")
+                            (+ result num)
+                            (* result num)))))
+          (set part1 (+ part1 result))))))
 
   (values part1 part2))
 
